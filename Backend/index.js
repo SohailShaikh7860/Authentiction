@@ -2,6 +2,8 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import connectDB from './DB/DataBase.js';
+import AuthRoute from './routes/authRoutes.js';
 
 dotenv.config();
 
@@ -16,6 +18,10 @@ app.use(cookieParser());
 app.get('/',(req,res)=>{
     res.send('Hello World!');
 })
+
+app.use('/auth',AuthRoute);
+
+connectDB();
 
 app.listen(port,()=>{
     console.log(`Server is running on port ${port}`);

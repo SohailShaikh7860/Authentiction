@@ -18,7 +18,7 @@ const register = async (req, res) => {
     const user = await UserModel.create({
       name,
       email,
-      password
+      password,
     });
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
@@ -45,7 +45,6 @@ const register = async (req, res) => {
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Internal server error" });
-    
   }
 };
 
@@ -102,59 +101,149 @@ const logOut = async (req, res) => {
   }
 };
 
-
 const sendVerifyOtp = async (req, res) => {
   try {
-    const {userId} = req.body;
+    const { userId } = req.body;
 
     const user = await UserModel.findById(userId);
-    if(user.isAccountVerified) {
-      return res.status(404).json({message: "Account already verified"});
+    if (user.isAccountVerified) {
+      return res.status(404).json({ message: "Account already verified" });
     }
 
- const otp = String(Math.floor(100000 + Math.random() * 900000));
-   
-  user.verifyOtp = otp;
-  user.verifyOtpExpiry = Date.now() + 24 * 60 * 60 * 1000
+    const otp = String(Math.floor(100000 + Math.random() * 900000));
 
-  await user.save();
+    user.verifyOtp = otp;
+    user.verifyOtpExpiry = Date.now() + 24 * 60 * 60 * 1000;
 
-  //incomplete
-  res.json({message: "OTP sent to your email"});
+    await user.save();
+
+    const mailOtp = {
+      from: process.env.SENDER_EMAIL,
+      to: user.email,
+      subject: "Email Verification OTP",
+      text: `Hello ${user.name},\n\nYour OTP for email verification is: ${otp}\nIt is valid for 10 mins.\n\nBest regards,\nTeam`,
+    };
+
+    await transporter.sendMail(mailOtp);
+
+    res.json({ message: "OTP sent to your email" });
   } catch (error) {
     res.json({ message: error.message });
   }
-}
+};
 
 const verifyEmail = async (req, res) => {
-   const {userId, otp} = req.body;
+  const { userId, otp } = req.body;
 
-   if(!userId || !otp) {
-    return res.status(404).json({message: "Missing required params"});
+  if (!userId || !otp) {
+    return res.status(404).json({ message: "Missing required params" });
+  }
+
+  try {
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    if (user.verifyOtp === "" || user.verifyOtp !== otp) {
+      return res.status(404).json({ message: "Invalid OTP" });
+    }
+
+    if (user.verifyOtpExpiry < Date.now()) {
+      return res.status(404).json({ message: "OTP Expired" });
+    }
+
+    user.isAccountVerified = true;
+    user.verifyOtp = "";
+    user.verifyOtpExpiry = 0;
+
+    await user.save();
+    return res.status(200).json({ message: "Account verified successfully" });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+const isAuthenticated = async (req, res) => {
+  try {
+    return res.status(200).json({ message: "User is authenticated" });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+const sendResetOtp = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(404).json({ message: "Email is required" });
+  }
+
+  try {
+    const user = await UserModel.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const otp = String(Math.floor(100000 + Math.random() * 900000));
+
+    user.resetOtp = otp;
+    user.resetOtpExpiry = Date.now() + 15 * 60 * 1000;
+
+    await user.save();
+
+    const mailOtp = {
+      from: process.env.SENDER_EMAIL,
+      to: user.email,
+      subject: "Password Reset OTP",
+      text: `Hello ${user.name},\n\nYour OTP for password reset is: ${otp}\nIt is valid for 15 mins.\n\nBest regards,\nTeam`,
+    };
+
+    await transporter.sendMail(mailOtp);
+     res.json({ message: "OTP sent to your email" });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+const resetPassword = async (req, res) => {
+   const { email, otp, newPassword } = req.body;
+
+   if(!email || !otp || !newPassword){
+    return res.status(404).json({ message: "All fields are required" });
    }
 
    try {
-     const user = await UserModel.findById(userId);
-     if(!user) {
-      return res.status(404).json({message: "User not found"});
-     }
-     if(user.verifyOtp === '' || user.verifyOtp !== otp){
-      return res.status(404).json({message: "Invalid OTP"});
-     }
+    const user = await UserModel.findOne({ email });
 
-     if(user.verifyOtpExpiry < Date.now()){
-      return res.status(404).json({message: "OTP Expired"});
-     }
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-     user.isAccountVerified = true;
-     user.verifyOtp = '';
-     user.verifyOtpExpiry = 0;
+    if (user.resetOtp === "" || user.resetOtp !== otp) {
+     return res.status(404).json({ message: "Invalid OTP" });
+    }
 
-     await user.save();
-     return res.status(200).json({message: "Account verified successfully"});
+    if (user.resetOtpExpiry < Date.now()) {
+      return res.status(404).json({ message: "OTP Expired" });
+    }
+    user.password = newPassword;
+    user.resetOtp = "";
+    user.resetOtpExpiry = 0;
+    await user.save();
+    return res.status(200).json({ message: "Password reset successfully" });
    } catch (error) {
-     return res.status(500).json({message: error.message});
+     return res.status(500).json({ message: error.message });
    }
 }
 
-export { register, login, logOut, sendVerifyOtp, verifyEmail };
+export {
+  register,
+  login,
+  logOut,
+  sendVerifyOtp,
+  verifyEmail,
+  isAuthenticated,
+  sendResetOtp,
+  resetPassword
+};

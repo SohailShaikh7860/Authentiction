@@ -4,6 +4,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import connectDB from './DB/DataBase.js';
 import AuthRoute from './routes/authRoutes.js';
+import userRouter from './routes/userRoutes.js';
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ app.get('/',(req,res)=>{
 })
 
 app.use('/auth',AuthRoute);
+app.use('/user',userRouter);
 
 connectDB();
 

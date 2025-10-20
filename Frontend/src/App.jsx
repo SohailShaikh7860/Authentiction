@@ -1,12 +1,22 @@
 import { useState } from 'react'
 import './App.css'
+import { Routes, Route } from 'react-router-dom'
+import Home from './pages/Home.jsx'
+import Login from './pages/Login.jsx'
+import ResetPassword from './pages/ResetPassword.jsx'
+import VerifyEmail from './pages/VerifyEmail.jsx'
 
 function App() {
   
 
   return (
-    <div className='text-2xl'>
-      Hello
+      <div className='text-2xl'>
+    <Routes>
+      <Route path='/' element={<Home />} />
+      <Route path='/login' element={<Login />} />
+      <Route path='/reset-password' element={<ResetPassword />} />
+      <Route path='/verify-email' element={<VerifyEmail />} />
+    </Routes>
     </div>
   )
 }

@@ -41,10 +41,10 @@ const register = async (req, res) => {
 
     await transporter.sendMail(mailOptions);
 
-    return res.status(201).json({ message: "User registered successfully" });
+    return res.status(201).json({success: true, message: "User registered successfully" });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
@@ -82,9 +82,9 @@ const login = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    return res.status(200).json({ message: "Login Successful" });
+    return res.status(200).json({ success: true, message: "Login Successful" });
   } catch (error) {
-    return res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 

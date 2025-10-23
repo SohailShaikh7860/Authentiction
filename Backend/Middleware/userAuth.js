@@ -1,7 +1,12 @@
 import jwt from "jsonwebtoken";
 
 const userAuth = async (req, res, next) => {
-    const { token } = req.cookies;
+    // Try to get token from cookies first, then from Authorization header
+    let token = req.cookies.token;
+    
+    if (!token && req.headers.authorization) {
+        token = req.headers.authorization.replace('Bearer ', '');
+    }
 
     if (!token) {
         return res.status(401).json({ message: "Unauthorized, No token found" });
@@ -9,12 +14,13 @@ const userAuth = async (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        
         if(decoded.id){
-            req.body.userId = decoded.id;
+            req.user = decoded;
+            req.userId = decoded.id;
         }else{
             return res.status(401).json({ message: "Unauthorized, Invalid token" });
         }
-        // req.user = decoded;
         next();
     } catch (error) {
         return res.status(401).json({ message: "Unauthorized, Invalid token" });

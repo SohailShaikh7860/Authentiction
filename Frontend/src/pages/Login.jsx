@@ -4,11 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+
 const Login = () => {
 
       const navigate = useNavigate();
 
-      const {backendURL,isLoggedIn} = useContext(AppContext);
+      const {backendURL,setIsLoggedIn, getUserData} = useContext(AppContext);
 
      const [state, setState] = useState('Sign Up');
      const [name, setName] = useState('');
@@ -19,14 +20,18 @@ const Login = () => {
       try {
         e.preventDefault();
 
-        axios.defaults.withCredentials = true;
+        axios.defaults.withCredentials = true; 
+
 
         if(state === 'Sign Up'){
          const {data} = await axios.post(backendURL + '/auth/register',{name, email, password});
 
          if(data.success){
-          setIsloggedIn(true);
-          navigate('/');
+          setIsLoggedIn(true);
+          setTimeout(async() => {
+           await getUserData();
+            navigate('/');
+          }, 100);
          }else{
           toast.error(data.message);
          }
@@ -35,12 +40,17 @@ const Login = () => {
 
          if(data.success){
           setIsLoggedIn(true);
-          navigate('/');
+          
+          setTimeout(async () => {
+           await getUserData();
+            navigate('/');
+          }, 100);
          }else{
           toast.error(data.message);
          }
         }
       } catch (error) {
+        console.log(error);
         toast.error("Something went wrong. Please try again later.");
       }
      }
@@ -80,7 +90,7 @@ const Login = () => {
             <button className='w-full py-2.5 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-900 text-white font-medium cursor-pointer'>{state}</button>
 
             {state === 'Sign Up' ? (
-                <p className='text-center mt-4 cursor-pointer text-gray-400 text-xs'>Alreday have an account?{' '} <span className='text-blue-400 underline' onClick={()=> setState('Login')}>Login here</span></p>
+                <p className='text-center mt-4 cursor-pointer text-gray-400 text-xs'>Already have an account?{' '} <span className='text-blue-400 underline' onClick={()=> setState('Login')}>Login here</span></p>
             ) : (
                <p className='text-center mt-4 cursor-pointer text-gray-400 text-xs'>Don't have an account{' '} <span className='text-blue-400 underline' onClick={()=> setState('Sign Up')}>Sign up</span></p>
             )}

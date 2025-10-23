@@ -22,15 +22,19 @@ const register = async (req, res) => {
     });
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "15min",
+      expiresIn: "7d",
     });
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+      secure: false, // Set to false for localhost development
+      sameSite: "lax", // Use "lax" for localhost development
+      path: "/", // Set path to root so it's available for all routes
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
+    
+    console.log("Setting cookie for user:", user._id);
+    console.log("Token created:", token.substring(0, 20) + "...");
 
     const mailOptions = {
       from: process.env.SENDER_EMAIL,
@@ -41,7 +45,7 @@ const register = async (req, res) => {
 
     await transporter.sendMail(mailOptions);
 
-    return res.status(201).json({success: true, message: "User registered successfully" });
+    return res.status(201).json({success: true, message: "User registered successfully", token: token });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ success: false, message: "Internal server error" });
@@ -72,17 +76,18 @@ const login = async (req, res) => {
     }
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "15min",
+      expiresIn: "7d",
     });
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+      secure: false, // Set to false for localhost development
+      sameSite: "lax", // Use "lax" for localhost development
+      path: "/", // Set path to root so it's available for all routes
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    return res.status(200).json({ success: true, message: "Login Successful" });
+    return res.status(200).json({ success: true, message: "Login Successful", token: token });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Internal server error" });
   }
@@ -92,8 +97,9 @@ const logOut = async (req, res) => {
   try {
     res.clearCookie("token", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+      secure: false, // Set to false for localhost development
+      sameSite: "lax", // Use "lax" for localhost development
+      path: "/", // Set path to root to match the cookie path
     });
     return res.status(200).json({ message: "Logout Successful" });
   } catch (error) {

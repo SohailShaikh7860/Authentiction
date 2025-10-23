@@ -10,12 +10,20 @@ dotenv.config();
 
 const app = express();
 
-const port = process.env.PORT || 8001;
-const allowedOrigins = [process.env.FRONTEND_URL];
+const port = process.env.PORT || 8000;
+const allowedOrigins = [
+  process.env.FRONTEND_URL || 'http://localhost:5173',
+  'http://localhost:5173',
+  'http://localhost:3000'
+];
 
 app.use(express.json());
-app.use(cors({credentials:true, origin:allowedOrigins}));
 app.use(cookieParser());
+app.use(cors({
+  credentials: true, 
+  origin: allowedOrigins
+}));
+
 
 app.get('/',(req,res)=>{
     res.send('Hello World!');

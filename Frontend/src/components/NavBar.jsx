@@ -2,6 +2,8 @@ import React, { use, useContext } from 'react'
 import {assets} from '../assets/assets'
 import { useNavigate } from 'react-router-dom'
 import { AppContext } from '../context/AppContext';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 
 
 const NavBar = () => {
@@ -9,6 +11,36 @@ const NavBar = () => {
      const navigate = useNavigate();
 
      const {userData, backendURL, setUserData, setIsLoggedIn} = useContext(AppContext);
+
+     const logoutHandler = async () => {
+      try {
+        axios.defaults.withCredentials = true;
+        const {data} = await axios.post(backendURL + '/auth/logOut');
+        data.success && setIsLoggedIn(false);
+        data.success && setUserData(null);
+        navigate('/');
+      } catch (error) {
+        toast.error("Something went wrong. Please try again later.");
+      }
+     }
+
+     const sendVerifyEmail = async () => {
+      try {
+        axios.defaults.withCredentials = true;
+        const {data} = await axios.post(backendURL + '/auth/send-verify-otp');
+
+        if(data.success){
+          navigate('/verify-email');
+          toast.success(data.message);
+        }else{
+          toast.error(data.message);
+        }
+      } catch (error) {
+        console.log(error);
+        
+        toast.error(error.message);
+      }
+     }
 
   return (
     <div className='w-full flex justify-between items-center p-4 sm:p-6 sm:px-24 absolute top-0'>
@@ -20,8 +52,9 @@ const NavBar = () => {
       <div className='absolute hidden group-hover:block top-0 right-0 z-10 text-black rounded pt-10 '>
 
         <ul className='list-none m-0 p-2 bg-gray-100 text-sm'>
-          <li className='py-1 px-2 hover:bg-gray-200 cursor-pointer'>Verify Email</li>
-          <li className='py-1 px-2 hover:bg-gray-200 cursor-pointer pr-10'>LogOut</li>
+          {!userData.isAccountVerified && <li className='py-1 px-2 hover:bg-gray-200 cursor-pointer' onClick={sendVerifyEmail}>Verify Email</li>}
+          
+          <li className='py-1 px-2 hover:bg-gray-200 cursor-pointer pr-10' onClick={logoutHandler}>LogOut</li>
         </ul>
 
       </div>

@@ -4,7 +4,6 @@ import axios from "axios";
 
 export const AppContext = createContext();
 
-axios.defaults.withCredentials = true;
 
 // Add interceptor to include Authorization header if token exists in localStorage
 axios.interceptors.request.use((config) => {
@@ -18,6 +17,8 @@ axios.interceptors.request.use((config) => {
 }); 
 
 export const AppProvider = (props) => {
+    axios.defaults.withCredentials = true;
+
  
     const backendURL = import.meta.env.VITE_API_URL
    
@@ -53,13 +54,19 @@ export const AppProvider = (props) => {
         }
     }
 
+    // const logout = () => {
+    //     localStorage.removeItem('token');
+    //     setIsLoggedIn(false);
+    //     setUserData(null);
+    // }
+
     const value = {
         backendURL,
         isLoggedIn,
         setIsLoggedIn,
         userData,
         setUserData,
-        getUserData
+        getUserData,
     }
 
     return(

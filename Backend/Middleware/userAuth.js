@@ -1,7 +1,6 @@
 import jwt from "jsonwebtoken";
 
 const userAuth = async (req, res, next) => {
-    // Try to get token from cookies first, then from Authorization header
     let token = req.cookies.token;
     
     if (!token && req.headers.authorization) {
@@ -18,10 +17,10 @@ const userAuth = async (req, res, next) => {
         if(decoded.id){
             req.user = decoded;
             req.userId = decoded.id;
+            next();
         }else{
             return res.status(401).json({ message: "Unauthorized, Invalid token" });
         }
-        next();
     } catch (error) {
         return res.status(401).json({ message: "Unauthorized, Invalid token" });
     }

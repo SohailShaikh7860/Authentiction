@@ -87,6 +87,7 @@ const login = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
+
     return res.status(200).json({ success: true, message: "Login Successful", token: token });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Internal server error" });
@@ -97,19 +98,19 @@ const logOut = async (req, res) => {
   try {
     res.clearCookie("token", {
       httpOnly: true,
-      secure: false, // Set to false for localhost development
-      sameSite: "lax", // Use "lax" for localhost development
-      path: "/", // Set path to root to match the cookie path
+      secure: false, 
+      sameSite: "lax", 
+      path: "/", 
     });
-    return res.status(200).json({ message: "Logout Successful" });
+    return res.status(200).json({success:true, message: "Logout Successful" });
   } catch (error) {
-    return res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
 const sendVerifyOtp = async (req, res) => {
   try {
-    const { userId } = req.body;
+    const userId = req.userId;
 
     const user = await UserModel.findById(userId);
     if (user.isAccountVerified) {
@@ -132,14 +133,15 @@ const sendVerifyOtp = async (req, res) => {
 
     await transporter.sendMail(mailOtp);
 
-    res.json({ message: "OTP sent to your email" });
+    res.json({success: true, message: "OTP sent to your email" });
   } catch (error) {
-    res.json({ message: error.message });
+    res.json({ success: false, message: error.message });
   }
 };
 
 const verifyEmail = async (req, res) => {
-  const { userId, otp } = req.body;
+  const { otp } = req.body;
+  const userId = req.userId;
 
   if (!userId || !otp) {
     return res.status(404).json({ message: "Missing required params" });
@@ -163,17 +165,17 @@ const verifyEmail = async (req, res) => {
     user.verifyOtpExpiry = 0;
 
     await user.save();
-    return res.status(200).json({ message: "Account verified successfully" });
+    return res.status(200).json({success: true, message: "Account verified successfully" });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 
 const isAuthenticated = async (req, res) => {
   try {
-    return res.status(200).json({ message: "User is authenticated" });
+    return res.status(200).json({ success: true, message: "User is authenticated" });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 

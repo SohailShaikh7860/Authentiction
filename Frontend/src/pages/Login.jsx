@@ -28,6 +28,12 @@ const Login = () => {
 
          if(data.success){
           setIsLoggedIn(true);
+          
+          // Store token in localStorage as backup
+          if(data.token) {
+            localStorage.setItem('token', data.token);
+          }
+          
           setTimeout(async() => {
            await getUserData();
             navigate('/');
@@ -40,6 +46,11 @@ const Login = () => {
 
          if(data.success){
           setIsLoggedIn(true);
+          
+          // Store token in localStorage as backup
+          if(data.token) {
+            localStorage.setItem('token', data.token);
+          }
           
           setTimeout(async () => {
            await getUserData();

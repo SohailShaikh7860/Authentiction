@@ -1,6 +1,7 @@
 import UserModel from "../Model/User-Model.js";
 import jwt from "jsonwebtoken";
 import transporter from "../Config/nodemailer.js";
+import { EMAIL_VERIFY_TEMPLATE, PASSWORD_RESET_TEMPLATE } from "../Config/emailTemplates.js";
 
 const register = async (req, res) => {
   const { name, email, password } = req.body;
@@ -128,7 +129,7 @@ const sendVerifyOtp = async (req, res) => {
       from: process.env.SENDER_EMAIL,
       to: user.email,
       subject: "Email Verification OTP",
-      text: `Hello ${user.name},\n\nYour OTP for email verification is: ${otp}\nIt is valid for 10 mins.\n\nBest regards,\nTeam`,
+      html: EMAIL_VERIFY_TEMPLATE.replace("{{email}}", user.email).replace("{{otp}}", otp),
     };
 
     await transporter.sendMail(mailOtp);
@@ -204,11 +205,12 @@ const sendResetOtp = async (req, res) => {
       from: process.env.SENDER_EMAIL,
       to: user.email,
       subject: "Password Reset OTP",
-      text: `Hello ${user.name},\n\nYour OTP for password reset is: ${otp}\nIt is valid for 15 mins.\n\nBest regards,\nTeam`,
+      // text: `Hello ${user.name},\n\nYour OTP for password reset is: ${otp}\nIt is valid for 15 mins.\n\nBest regards,\nTeam`,
+      html: PASSWORD_RESET_TEMPLATE.replace("{{email}}", user.email).replace("{{otp}}", otp),
     };
 
     await transporter.sendMail(mailOtp);
-     res.json({ message: "OTP sent to your email" });
+     res.json({ success: true, message: "OTP sent to your email" });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -239,9 +241,9 @@ const resetPassword = async (req, res) => {
     user.resetOtp = "";
     user.resetOtpExpiry = 0;
     await user.save();
-    return res.status(200).json({ message: "Password reset successfully" });
+    return res.status(200).json({success: true, message: "Password reset successfully" });
    } catch (error) {
-     return res.status(500).json({ message: error.message });
+     return res.status(500).json({ success: false, message: error.message });
    }
 }
 

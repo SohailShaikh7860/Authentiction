@@ -13,7 +13,7 @@ Includes secure login, registration, JWT-based authentication, and protected rou
 - Persistent login using localStorage
 - Logout functionality
 - Error handling and form validation
-- Built with modern React (Hooks + Context API or Redux)
+- Built with modern React (Hooks + Context API)
 
 ---
 

@@ -23,7 +23,7 @@ Includes secure login, registration, JWT-based authentication, and protected rou
 - React.js
 - Axios
 - React Router DOM
-- Tailwind CSS / CSS Modules (optional)
+- Tailwind CSS
 
 **Backend:**
 - Node.js
@@ -36,5 +36,4 @@ Includes secure login, registration, JWT-based authentication, and protected rou
 
 ---
 
-## 📦 Folder Structure
 

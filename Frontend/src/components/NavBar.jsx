@@ -16,9 +16,14 @@ const NavBar = () => {
       try {
         axios.defaults.withCredentials = true;
         const {data} = await axios.post(backendURL + '/auth/logOut');
-        data.success && setIsLoggedIn(false);
-        data.success && setUserData(null);
-        navigate('/');
+        
+        if(data.success) {
+          // Clear token from localStorage
+          localStorage.removeItem('token');
+          setIsLoggedIn(false);
+          setUserData(null);
+          navigate('/');
+        }
       } catch (error) {
         toast.error("Something went wrong. Please try again later.");
       }
